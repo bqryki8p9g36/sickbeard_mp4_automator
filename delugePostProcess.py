@@ -9,10 +9,20 @@ from resources.mediaprocessor import MediaProcessor
 from resources.log import getLogger
 from deluge_client import DelugeRPCClient
 import shutil
-
+BrokenPipeError
 log = getLogger("DelugePostProcess")
 
 log.info("Deluge post processing started.")
+
+
+def setPermissions(settings, path):
+    try:
+        os.chmod(path, settings.permissions.get('chmod', int('0664', 8)))
+        if os.name != 'nt':
+            os.chown(path, settings.permissions.get('uid', -1), settings.permissions.get('gid', -1))
+    except:
+        log.exception("Unable to set new file permissions.")
+
 
 try:
     settings = ReadSettings()
@@ -101,10 +111,13 @@ try:
                 settings.output_dir = os.path.join(path, ("%s-%s" % (re.sub(settings.regex, '_', torrent_name), suffix)))
             else:
                 settings.output_dir = os.path.join(settings.output_dir, re.sub(settings.regex, '_', torrent_name))
+
             if not os.path.exists(settings.output_dir):
                 try:
                     os.makedirs(settings.output_dir)
                     delete_dir = settings.output_dir
+
+                    setPermissions(settings, settings.output_dir)
                 except:
                     log.exception("Unable to make output directory %s." % settings.output_dir)
 
