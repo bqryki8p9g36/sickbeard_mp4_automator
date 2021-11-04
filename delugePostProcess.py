@@ -9,7 +9,7 @@ from resources.mediaprocessor import MediaProcessor
 from resources.log import getLogger
 from deluge_client import DelugeRPCClient
 import shutil
-BrokenPipeError
+
 log = getLogger("DelugePostProcess")
 
 log.info("Deluge post processing started.")
